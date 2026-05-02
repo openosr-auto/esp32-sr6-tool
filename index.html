@@ -122,9 +122,19 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <div class="app">
 
 <!-- Header -->
-<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg3);border-bottom:1px solid var(--border2);flex-shrink:0;gap:12px">
-  <span style="font-size:13px;font-weight:600;color:var(--text);letter-spacing:0.5px">欢迎来到 CraftyHandy ESP32 Tools</span><span style="font-size:9px;color:var(--text2);margin-left:12px">openosr@gmail.com</span>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px;background:var(--bg3);border-bottom:1px solid var(--border2);flex-shrink:0;gap:8px;flex-wrap:wrap">
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:13px;font-weight:600;color:var(--text);letter-spacing:0.5px">CraftyHandy ESP32 Tools</span>
+    <a href="https://craftyhandy.com/" target="_blank" style="font-size:10px;color:var(--accent2);text-decoration:none">craftyhandy.com</a>
+    <span style="font-size:9px;color:var(--text2)">openosr@gmail.com</span>
+  </div>
   <div style="display:flex;align-items:center;gap:8px">
+    <select id="langSelect" style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);padding:2px 6px;font-size:10px;outline:none;cursor:pointer">
+      <option value="zh">中文</option>
+      <option value="en">English</option>
+      <option value="ja">日本語</option>
+      <option value="ko">한국어</option>
+    </select>
     <span class="sd idle" id="statusDot" style="width:8px;height:8px;border-radius:50%;background:var(--text2);flex-shrink:0"></span>
     <span id="statusText" style="font-size:11px;color:var(--text2)">就绪</span>
   </div>
@@ -132,8 +142,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
 <!-- Tab Bar -->
 <div class="tab-bar">
-  <div class="tab-btn active" data-tab="flash">烧录</div>
-  <div class="tab-btn" data-tab="zero">校准</div>
+  <div class="tab-btn active" data-tab="flash" data-i18n="flash"></div>
+  <div class="tab-btn" data-tab="zero" data-i18n="cal"></div>
 </div>
 
 <!-- ============== FLASH TAB ============== -->
@@ -141,32 +151,32 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <div class="flash-layout">
     <div class="flash-left">
       <div class="section">
-        <h3>固件更新</h3>
+        <h3 data-i18n="firmwareUpdate">固件更新</h3>
         <div class="flash-panel">
           <div class="row">
-            <span class="label">波特率</span>
+            <span class="label" data-i18n="baud">波特率</span>
             <select id="baudSelect" style="flex:1">
-              <option value="115200">115200（最稳定）</option>
-              <option value="460800">460800（速度快）</option>
+              <option value="115200" data-i18n="baudStable">115200（最稳定）</option>
+              <option value="460800" data-i18n="baudFast">460800（速度快）</option>
             </select>
           </div>
           <div class="row">
-            <button class="btn btn-pri" id="flashConnectBtn" style="font-weight:600">连接设备</button>
-            <button class="btn btn-outline btn-outline-danger hidden" id="flashDisconnectBtn">断开连接</button>
+            <button class="btn btn-pri" id="flashConnectBtn" style="font-weight:600" data-i18n="connectDevice"></button>
+            <button class="btn btn-outline btn-outline-danger hidden" id="flashDisconnectBtn" data-i18n="disconnectBtn"></button>
           </div>
           <div style="border-top:1px solid var(--border);margin:2px 0 4px"></div>
           <div class="row">
-            <label class="file-label"><span id="fileName">选择固件 .bin 文件</span><input type="file" id="fileInput" accept=".bin"></label>
+            <label class="file-label"><span id="fileName" data-i18n="selectBin">选择固件 .bin 文件</span><input type="file" id="fileInput" accept=".bin"></label>
           </div>
           <div class="row">
-            <span class="label">起始地址</span>
+            <span class="label" data-i18n="startAddr">起始地址</span>
             <input type="text" id="flashOffset" value="0x00">
-            <span style="font-size:10px;color:var(--text2)">一般填 0x00</span>
+            <span style="font-size:10px;color:var(--text2)" data-i18n="defaultFill">一般填 0x00</span>
           </div>
           <div class="row">
-            <button class="btn btn-pri" id="flashBtn" disabled style="font-weight:600;flex:1">写入固件</button>
-            <button class="btn btn-danger" id="eraseBtn" disabled>擦除</button>
-            <button class="btn btn-outline-warning" id="rebootBtn" disabled>重启 ESP32</button>
+            <button class="btn btn-pri" id="flashBtn" disabled style="font-weight:600;flex:1" data-i18n="writeFirmware"></button>
+            <button class="btn btn-danger" id="eraseBtn" disabled data-i18n="eraseFlash"></button>
+            <button class="btn btn-outline-warning" id="rebootBtn" disabled data-i18n="restartESP"></button>
           </div>
           <div class="progress-wrap" id="progressWrap">
             <div class="progress-fill" id="progressFill"></div>
@@ -178,7 +188,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="flash-right" style="display:flex;flex-direction:column;overflow:hidden;background:var(--bg)">
       <!-- Log section -->
       <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
-        <span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2)">操作日志</span>
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2)" data-i18n="log">操作日志</span>
         <span style="font-size:10px;color:var(--text2)" id="flashChipStatus"></span>
       </div>
       <div class="flash-log" id="flashLog" style="flex:1;border:none;border-radius:0;min-height:0;padding:8px 12px"></div>
@@ -192,37 +202,37 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="zero-left" style="background:var(--bg)">
       <div class="section" id="zeroPanel" style="border-left:3px solid var(--warning);box-shadow:0 2px 12px rgba(0,0,0,.3)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0">校准</h3>
+          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0" data-i18n="calTitle">校准</h3>
           <div style="display:flex;gap:4px">
             <select id="modeSelect" style="background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);padding:2px 6px;font-size:10px;outline:none">
               <option value="sr6">SR6</option>
               <option value="osr2">OSR2</option>
             </select>
-            <button class="pbtn" id="zeroReadBtn" style="font-size:10px">读取</button>
-            <button class="pbtn" id="zeroSaveBtn" style="font-size:10px">写入</button>
-            <button class="pbtn" id="zeroResetBtn" style="font-size:10px">恢复默认</button>
+            <button class="pbtn" id="zeroReadBtn" style="font-size:10px" data-i18n="read"></button>
+            <button class="pbtn" id="zeroSaveBtn" style="font-size:10px" data-i18n="write"></button>
+            <button class="pbtn" id="zeroResetBtn" style="font-size:10px" data-i18n="restoreDefault"></button>
           </div>
         </div>
         <div id="zeroRows"></div>
       </div>
       <div id="tempSection" class="section" style="margin-top:8px;border-left:3px solid var(--accent);box-shadow:0 2px 12px rgba(0,0,0,.3)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0">温度保护</h3>
+          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0" data-i18n="tempProtect"></h3>
           <div style="display:flex;gap:4px">
-            <button class="pbtn" id="tempReadBtn" style="font-size:10px">读取</button>
-            <button class="pbtn" id="tempSaveBtn" style="font-size:10px">写入</button>
+            <button class="pbtn" id="tempReadBtn" style="font-size:10px" data-i18n="read"></button>
+            <button class="pbtn" id="tempSaveBtn" style="font-size:10px" data-i18n="write"></button>
           </div>
         </div>
         <div id="tempRows">
           <div class="z-row">
-            <span class="zn">保护阈值</span>
+            <span class="zn" data-i18n="threshold">保护阈值</span>
             <input type="range" min="30" max="80" value="45" data-t="sp" step="0.5" style="accent-color:var(--accent);max-width:60px;height:3px">
             <span class="zv" id="tempSp" style="color:var(--accent);width:48px">45°C</span>
             <button class="zb" data-t="sp" data-d="-0.5" style="padding:1px 5px;min-width:22px">-</button>
             <button class="zb" data-t="sp" data-d="0.5" style="padding:1px 5px;min-width:22px">+</button>
           </div>
           <div class="z-row">
-            <span class="zn">恢复温差</span>
+            <span class="zn" data-i18n="hysteresis">恢复温差</span>
             <input type="range" min="1" max="20" value="3" data-t="hy" step="0.5" style="accent-color:var(--accent);max-width:60px;height:3px">
             <span class="zv" id="tempHy" style="color:var(--accent);width:48px">3°C</span>
             <button class="zb" data-t="hy" data-d="-0.5" style="padding:1px 5px;min-width:22px">-</button>
@@ -232,87 +242,87 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       </div>
       <div id="speedSection" class="section" style="border-left:3px solid var(--accent3);box-shadow:0 2px 12px rgba(0,0,0,.3)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0">速度微调</h3>
+          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0" data-i18n="speedTune"></h3>
           <div style="display:flex;gap:4px">
-            <button class="pbtn" id="speedReadBtn" style="font-size:9px">读取</button>
-            <button class="pbtn" id="speedSaveBtn" style="font-size:9px">写入</button>
+            <button class="pbtn" id="speedReadBtn" style="font-size:9px" data-i18n="read"></button>
+            <button class="pbtn" id="speedSaveBtn" style="font-size:9px" data-i18n="write"></button>
           </div>
         </div>
         <div id="speedRows">
-          <div id="spdRow0" class="z-row"><span class="zn">GPIO15左前</span><input type="range" min="1" max="50" value="10" data-si="0" style="accent-color:var(--accent3)"><span class="zv" id="spd0" style="color:var(--accent3);width:32px">1.0</span></div>
-          <div id="spdRow1" class="z-row"><span class="zn">GPIO2左上</span><input type="range" min="1" max="50" value="10" data-si="1" style="accent-color:var(--accent3)"><span class="zv" id="spd1" style="color:var(--accent3);width:32px">1.0</span></div>
-          <div id="spdRow2" class="z-row"><span class="zn">GPIO13右前</span><input type="range" min="1" max="50" value="10" data-si="2" style="accent-color:var(--accent3)"><span class="zv" id="spd2" style="color:var(--accent3);width:32px">1.0</span></div>
-          <div id="spdRow3" class="z-row"><span class="zn">GPIO12右上</span><input type="range" min="1" max="50" value="10" data-si="3" style="accent-color:var(--accent3)"><span class="zv" id="spd3" style="color:var(--accent3);width:32px">1.0</span></div>
-          <div id="spdRow4" class="z-row"><span class="zn">GPIO4左倾</span><input type="range" min="1" max="50" value="10" data-si="4" style="accent-color:var(--accent3)"><span class="zv" id="spd4" style="color:var(--accent3);width:32px">1.0</span></div>
-          <div id="spdRow5" class="z-row"><span class="zn">GPIO14右倾</span><input type="range" min="1" max="50" value="10" data-si="5" style="accent-color:var(--accent3)"><span class="zv" id="spd5" style="color:var(--accent3);width:32px">1.0</span></div>
+          <div id="spdRow0" class="z-row"><span class="zn">GPIO15</span><input type="range" min="1" max="50" value="10" data-si="0" style="accent-color:var(--accent3)"><span class="zv" id="spd0" style="color:var(--accent3);width:32px">1.0</span></div>
+          <div id="spdRow1" class="z-row"><span class="zn">GPIO2</span><input type="range" min="1" max="50" value="10" data-si="1" style="accent-color:var(--accent3)"><span class="zv" id="spd1" style="color:var(--accent3);width:32px">1.0</span></div>
+          <div id="spdRow2" class="z-row"><span class="zn">GPIO13</span><input type="range" min="1" max="50" value="10" data-si="2" style="accent-color:var(--accent3)"><span class="zv" id="spd2" style="color:var(--accent3);width:32px">1.0</span></div>
+          <div id="spdRow3" class="z-row"><span class="zn">GPIO12</span><input type="range" min="1" max="50" value="10" data-si="3" style="accent-color:var(--accent3)"><span class="zv" id="spd3" style="color:var(--accent3);width:32px">1.0</span></div>
+          <div id="spdRow4" class="z-row"><span class="zn">GPIO4</span><input type="range" min="1" max="50" value="10" data-si="4" style="accent-color:var(--accent3)"><span class="zv" id="spd4" style="color:var(--accent3);width:32px">1.0</span></div>
+          <div id="spdRow5" class="z-row"><span class="zn">GPIO14</span><input type="range" min="1" max="50" value="10" data-si="5" style="accent-color:var(--accent3)"><span class="zv" id="spd5" style="color:var(--accent3);width:32px">1.0</span></div>
         </div>
-        <div style="font-size:8px;color:var(--text2);margin-top:4px">系数范围 0.1~5.0, 1.0=正常速度</div>
+        <div style="font-size:8px;color:var(--text2);margin-top:4px"><span data-i18n="speedRange">系数范围 0.1~5.0, 1.0=正常速度</span></div>
       </div>
       <div id="testSection" class="section" style="border-left:3px solid var(--accent2);box-shadow:0 2px 12px rgba(0,0,0,.3)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0">测试动作</h3>
-          <button class="pbtn" data-tx="L05000 L15000 L25000 R05000 R15000 R25000" data-reset-sliders="1" style="font-size:9px;border-color:var(--accent2);color:var(--accent2)">恢复默认值</button>
+          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0" data-i18n="testAction">测试动作</h3>
+          <button class="pbtn" data-tx="L05000 L15000 L25000 R05000 R15000 R25000" data-reset-sliders="1" style="font-size:9px;border-color:var(--accent2);color:var(--accent2)" data-i18n="homeReset">恢复默认值</button>
         </div>
         <div id="tcodeSliders"></div>
         <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px">
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
-            <span style="font-size:10px;color:var(--text2)">TCode脚本</span>
-            <label class="pbtn" style="font-size:9px;cursor:pointer">选择.funscript
+            <span style="font-size:10px;color:var(--text2)" data-i18n="tcodeScript">TCode脚本</span>
+            <label class="pbtn" style="font-size:9px;cursor:pointer" data-i18n="selectScript">选择.funscript
               <input type="file" id="scriptFile" accept=".funscript" style="display:none">
             </label>
-            <button class="pbtn" id="scriptRunBtn" style="font-size:9px;border-color:var(--accent2);color:var(--accent2)" disabled>运行</button>
-            <button class="pbtn" id="scriptStopBtn" style="font-size:9px;border-color:var(--accent);color:var(--accent);display:none">停止</button>
+            <button class="pbtn" id="scriptRunBtn" style="font-size:9px;border-color:var(--accent2);color:var(--accent2)" disabled data-i18n="run">运行</button>
+            <button class="pbtn" id="scriptStopBtn" style="font-size:9px;border-color:var(--accent);color:var(--accent);display:none" data-i18n="stop">停止</button>
             <select id="scriptDelay" style="background:var(--bg);border:1px solid var(--border2);border-radius:3px;color:var(--text);padding:2px 4px;font-size:9px;outline:none">
-              <option value="0">原速(funscript)</option>
+              <option value="0" data-i18n="originalSpeed">原速(funscript)</option>
               <option value="100" selected>100ms</option>
               <option value="200">200ms</option>
               <option value="500">500ms</option>
             </select>
           </div>
-          <div style="font-size:9px;color:var(--text2);margin-top:4px;line-height:1.5" id="scriptStatus">上传 .funscript 文件自动播放动作</div>
+          <div style="font-size:9px;color:var(--text2);margin-top:4px;line-height:1.5" id="scriptStatus" data-i18n="scriptHint"></div>
           <div id="scriptHistory" style="margin-top:4px"></div>
         </div>
       </div>
       <div class="section" style="border-left:3px solid var(--accent2);box-shadow:0 2px 12px rgba(0,0,0,.3)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0">蓝牙名称</h3>
+          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0" data-i18n="btName"></h3>
           <div style="display:flex;gap:4px">
-            <button class="pbtn" id="btReadBtn" style="font-size:9px">读取</button>
-            <button class="pbtn" id="btSaveBtn" style="font-size:9px;border-color:var(--accent2);color:var(--accent2)">保存</button>
+            <button class="pbtn" id="btReadBtn" style="font-size:9px" data-i18n="read"></button>
+            <button class="pbtn" id="btSaveBtn" style="font-size:9px;border-color:var(--accent2);color:var(--accent2)" data-i18n="write"></button>
           </div>
         </div>
         <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px">
           <input type="text" id="btNameInput" value="craftyhandy" maxlength="30" style="flex:1;padding:5px 8px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:11px;font-family:var(--font);outline:none">
         </div>
-        <div style="font-size:9px;color:var(--text2)">仅字母/数字/连字符/下划线, 保存后重启生效</div>
+        <div style="font-size:9px;color:var(--text2)" data-i18n="btHint"></div>
         <div id="btStatus" style="font-size:10px;color:var(--success);margin-top:4px"></div>
       </div>
     </div>
     <div class="zero-right">
       <div class="toolbar">
-        <button class="btn btn-pri" id="zeroConnectBtn">连接</button>
-        <button class="btn btn-outline-danger hidden" id="zeroDisconnectBtn">断开</button>
-        <span style="font-size:10px;color:var(--text2)">波特率 115200</span>
-        <label style="font-size:10px;color:var(--text2)"><input type="checkbox" id="autoScroll" checked> 滚动</label>
-        <button class="btn" id="zeroClearBtn">清空</button>
+        <button class="btn btn-pri" id="zeroConnectBtn" data-i18n="connect">连接</button>
+        <button class="btn btn-outline-danger hidden" id="zeroDisconnectBtn" data-i18n="disconnect">断开</button>
+        <span style="font-size:10px;color:var(--text2)" data-i18n="baud">波特率 115200</span>
+        <label style="font-size:10px;color:var(--text2)"><input type="checkbox" id="autoScroll" checked> <span data-i18n="autoScroll">滚动</span></label>
+        <button class="btn" id="zeroClearBtn" data-i18n="clear">清空</button>
         <span style="font-size:10px;color:var(--text2)" id="zeroStatus">未连接</span>
       </div>
       <div class="serial-out" id="zeroOutput"></div>
       <div class="section" style="margin:6px 8px;border-left:3px solid var(--accent3);box-shadow:0 2px 12px rgba(0,0,0,.3);flex-shrink:0">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0">WiFi</h3>
+          <h3 style="font-size:12px;color:var(--text);font-weight:600;text-transform:none;letter-spacing:0" data-i18n="wifiTitle"></h3>
           <div style="display:flex;gap:4px">
-            <button class="pbtn" id="wifiReadBtn" style="font-size:9px">读取</button>
-            <button class="pbtn" id="wifiSaveBtn" style="font-size:9px;border-color:var(--accent3);color:var(--accent3)">保存</button>
+            <button class="pbtn" id="wifiReadBtn" style="font-size:9px" data-i18n="read"></button>
+            <button class="pbtn" id="wifiSaveBtn" style="font-size:9px;border-color:var(--accent3);color:var(--accent3)" data-i18n="write"></button>
           </div>
         </div>
         <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
           <input type="text" id="wifiSsidInput" maxlength="46" style="flex:1;min-width:100px;padding:4px 6px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:10px;font-family:var(--font);outline:none" placeholder="WiFi名称">
           <input type="password" id="wifiPassInput" maxlength="46" style="flex:1;min-width:80px;padding:4px 6px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:10px;font-family:var(--font);outline:none" placeholder="密码">
         </div>
-        <div id="wifiStatus" style="font-size:9px;color:var(--text2);margin-top:4px">未连接</div>
+        <div id="wifiStatus" style="font-size:9px;color:var(--text2);margin-top:4px" data-i18n="wifiUnconnected"></div>
         <div style="font-size:8px;color:var(--text2);margin-top:4px;line-height:1.4">
-          使用: 保存WiFi信息 → 重启ESP32 → 浏览器访问 http://芯片IP 发送TCode命令
+          data-i18n="wifiUsage">使用: 保存WiFi信息 → 重启ESP32 → 浏览器访问 http://芯片IP 发送TCode命令
         </div>
       </div>
     </div>
@@ -325,6 +335,87 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 // ============================================================
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 const esc = t => t.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]);
+
+// ====== Translations ======
+const LANG = {
+  zh: {
+    ready: '就绪', connect: '连接', disconnect: '断开', flash: '烧录', cal: '校准',
+    baud: '波特率', baudStable: '115200（最稳定）', baudFast: '460800（速度快）', firmwareUpdate: '固件更新', startAddr: '起始地址', defaultFill: '一般填 0x00',
+    selectBin: '选择固件 .bin 文件', writeFirmware: '写入固件', erase: '擦除', restartESP: '重启 ESP32',
+    connectDevice: '连接设备', disconnectBtn: '断开连接', reboot: '重启', eraseFlash: '擦除',
+    calTitle: '校准', read: '读取', write: '写入', restoreDefault: '恢复默认',
+    tempProtect: '温度保护', threshold: '保护阈值', hysteresis: '恢复温差',
+    speedTune: '速度微调', speedRange: '系数范围 0.1~5.0, 1.0=正常速度',
+    testAction: '测试动作', homeReset: '恢复默认值', log: '操作日志', serialData: '串口数据',
+    connectMonitor: '连接监视器', bluetooth: '蓝牙名称', wifi: 'WiFi',
+    btName: '蓝牙名称', btHint: '仅字母/数字/连字符/下划线, 保存后重启生效',
+    wifiTitle: 'WiFi', wifiSSID: 'WiFi名称', wifiPass: '密码', wifiUnconnected: '未连接',
+    wifiUsage: '使用: 保存WiFi信息 → 重启ESP32 → 浏览器访问 http://芯片IP 发送TCode命令',
+    lang: '语言', statusReady: '就绪', statusConnected: '已连接', statusFailed: '失败',
+    scriptHint: '上传 .funscript 文件自动播放动作',
+    fwHistory: '历史固件',
+    scriptHistoryLabel: '历史脚本',
+    email: 'openosr@gmail.com',
+  },
+  en: {
+    ready: 'Ready', connect: 'Connect', disconnect: 'Disconnect', flash: 'Flash', cal: 'Calibration',
+    baud: 'Baud', firmwareUpdate: 'Firmware Update', startAddr: 'Start Addr', defaultFill: 'Usually 0x00',
+    selectBin: 'Select .bin file', writeFirmware: 'Write', erase: 'Erase', restartESP: 'Restart ESP32',
+    connectDevice: 'Connect', disconnectBtn: 'Disconnect', reboot: 'Reboot', eraseFlash: 'Erase',
+    calTitle: 'Calibration', read: 'Read', write: 'Write', restoreDefault: 'Reset Defaults',
+    tempProtect: 'Temp Protection', threshold: 'Threshold', hysteresis: 'Hysteresis',
+    speedTune: 'Speed Tuning', speedRange: 'Range 0.1~5.0, 1.0=Normal',
+    testAction: 'Test Action', homeReset: 'Home/Reset', log: 'Log', serialData: 'Serial Data',
+    connectMonitor: 'Connect', bluetooth: 'Bluetooth', wifi: 'WiFi',
+    btName: 'Bluetooth Name', btHint: 'Letters/numbers/hyphen/underscore only, reboot to apply',
+    wifiTitle: 'WiFi', wifiSSID: 'WiFi SSID', wifiPass: 'Password', wifiUnconnected: 'Not connected',
+    wifiUsage: 'Save WiFi → Reboot ESP32 → Browse http://IP to send TCode commands',
+    autoScroll: 'Auto Scroll', clear: 'Clear', tcodeScript: 'TCode Script', selectScript: 'Select .funscript', run: 'Run', stop: 'Stop', originalSpeed: 'Original (funscript)', baudStable: '115200 (Stable)', baudFast: '460800 (Fast)', statusUnconnected: 'Not Connected',
+    lang: 'Language', statusReady: 'Ready', statusConnected: 'Connected', statusFailed: 'Failed',
+    scriptHint: 'Upload .funscript to play',
+    email: 'openosr@gmail.com',
+  },
+  ja: {
+    scriptHint: '.funscriptをアップロードして再生',
+    ready: '準備完了', connect: '接続', disconnect: '切断', flash: '書込み', cal: '調整',
+    baud: 'ボーレート', firmwareUpdate: 'ファームウェア更新', startAddr: '開始アドレス', defaultFill: '通常 0x00',
+    selectBin: '.binファイルを選択', writeFirmware: '書込む', erase: '消去', restartESP: 'ESP32再起動',
+    connectDevice: '接続', disconnectBtn: '切断', reboot: '再起動', eraseFlash: '消去',
+    calTitle: '調整', read: '読取', write: '書込', restoreDefault: '初期値に戻す',
+    tempProtect: '温度保護', threshold: 'しきい値', hysteresis: 'ヒステリシス',
+    speedTune: '速度調整', speedRange: '範囲 0.1~5.0, 1.0=標準',
+    testAction: 'テスト動作', homeReset: 'ホームに戻す', log: 'ログ', serialData: 'シリアルデータ',
+    connectMonitor: '接続', bluetooth: 'ブルートゥース', wifi: 'WiFi',
+    btName: 'Bluetooth名', btHint: '英数字/ハイフン/アンダースコアのみ',
+    wifiTitle: 'WiFi', wifiSSID: 'WiFi SSID', wifiPass: 'パスワード', wifiUnconnected: '未接続',
+    wifiUsage: 'WiFi保存 → ESP32再起動 → http://IP にアクセス',
+    autoScroll: '自動スクロール', clear: 'クリア', tcodeScript: 'TCodeスクリプト', selectScript: '.funscriptを選択', run: '実行', stop: '停止', originalSpeed: '原速(funscript)', baudStable: '115200（安定）', baudFast: '460800（高速）', statusUnconnected: '未接続',
+    lang: '言語', statusReady: '準備完了', statusConnected: '接続済み', statusFailed: '失敗',
+    email: 'openosr@gmail.com',
+  },
+  ko: {
+    ready: '준비 완료', connect: '연결', disconnect: '연결 끊기', flash: '쓰기', cal: '조정',
+    baud: '보레이트', firmwareUpdate: '펌웨어 업데이트', startAddr: '시작 주소', defaultFill: '보통 0x00',
+    selectBin: '.bin 파일 선택', writeFirmware: '쓰기', erase: '지우기', restartESP: 'ESP32 재시작',
+    connectDevice: '연결', disconnectBtn: '연결 끊기', reboot: '재시작', eraseFlash: '지우기',
+    calTitle: '조정', read: '읽기', write: '쓰기', restoreDefault: '기본값 복원',
+    tempProtect: '온도 보호', threshold: '임계값', hysteresis: '히스테리시스',
+    speedTune: '속도 조정', speedRange: '범위 0.1~5.0, 1.0=보통',
+    testAction: '테스트 동작', homeReset: '홈으로', log: '로그', serialData: '시리얼 데이터',
+    connectMonitor: '연결', bluetooth: '블루투스', wifi: 'WiFi',
+    btName: '블루투스 이름', btHint: '영문/숫자/하이픈/밑줄만 가능',
+    wifiTitle: 'WiFi', wifiSSID: 'WiFi SSID', wifiPass: '비밀번호', wifiUnconnected: '연결 안됨',
+    wifiUsage: 'WiFi 저장 → ESP32 재시작 → http://IP 접속',
+    autoScroll: '자동 스크롤', clear: '지우기', tcodeScript: 'TCode 스크립트', selectScript: '.funscript 선택', run: '실행', stop: '정지', originalSpeed: '원속(funscript)', baudStable: '115200（안정）', baudFast: '460800（고속）', statusUnconnected: '연결 안됨',
+    lang: '언어', statusReady: '준비 완료', statusConnected: '연결됨', statusFailed: '실패',
+    scriptHint: '.funscript를 업로드하여 재생',
+    fwHistory: '기록',
+    scriptHistoryLabel: '스크립트 기록',
+    email: 'openosr@gmail.com',
+  },
+};
+let currentLang = localStorage.getItem('esp32_lang') || 'zh';
+function t(key) { return LANG[currentLang]?.[key] || LANG.zh[key] || key; }
 
 // Load esptool-js for flash mode
 let EL, TR;
@@ -504,7 +595,7 @@ class App {
     // Flash monitor state
     // Zero data
     this.zeroVals = [1500,1500,1500,1500,1500,1500];
-    this.zeroNames = ['LowerLeft 左前 (GPIO15)','UpperLeft 左上 (GPIO2)','LowerRight 右前 (GPIO13)','UpperRight 右上 (GPIO12)','LeftPitch 左倾 (GPIO4)','RightPitch 右倾 (GPIO14)'];
+    this.zeroNames = ['LowerLeft (GPIO15)','UpperLeft (GPIO2)','LowerRight (GPIO13)','UpperRight (GPIO12)','LeftPitch (GPIO4)','RightPitch (GPIO14)'];
 
     this.init();
     this.buildZeroUI();
@@ -722,11 +813,24 @@ class App {
       document.getElementById('wifiStatus').textContent = '已保存: ' + ssid + ' (重启后生效)';
     });
 
+    // ---- Language Switcher ----
+    const langSel = document.getElementById('langSelect');
+    if (langSel) {
+      langSel.value = currentLang;
+      langSel.addEventListener('change', () => {
+        currentLang = langSel.value;
+        localStorage.setItem("esp32_lang", currentLang);
+        this.applyLang();
+      });
+      this.applyLang();
+    }
+
     this.buildTCodeSliders();
-    this.renderScriptHistory();
+    this.renderScriptHistory().catch(() => {});
     this.flashLog('就绪','info');
-    document.getElementById('zeroOutput').innerHTML = '';
-    
+    const zo = document.getElementById('zeroOutput');
+    if (zo) zo.innerHTML = '';
+
   }
 
   // ===================== Status =====================
@@ -916,7 +1020,7 @@ class App {
     try {
       const entries = await this.fwHistory.getAll();
       if (!entries || entries.length === 0) { container.innerHTML = ''; return; }
-      let html = '<div style="color:var(--text2);margin-bottom:4px;font-size:10px">历史固件：</div>';
+      let html = '<div style="color:var(--text2);margin-bottom:4px;font-size:10px">' + t('fwHistory') + '：</div>';
       entries.slice(0, 5).forEach(entry => {
         const date = new Date(entry.date);
         const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
@@ -1390,12 +1494,12 @@ class App {
           {name:'OSR2 Left (GPIO15)', ch:0, gpio:15},
           {name:'OSR2 Right (GPIO13)', ch:2, gpio:13},
           {name:'OSR2 Pitch (GPIO4)', ch:4, gpio:4},]
-      : [{name:'LowerLeft 左前 (GPIO15)', ch:0},
-         {name:'UpperLeft 左上 (GPIO2)', ch:1},
-         {name:'LowerRight 右前 (GPIO13)', ch:2},
-         {name:'UpperRight 右上 (GPIO12)', ch:3},
-         {name:'LeftPitch 左倾 (GPIO4)', ch:4},
-         {name:'RightPitch 右倾 (GPIO14)', ch:5},];
+      : [{name:'LowerLeft (GPIO15)', ch:0},
+         {name:'UpperLeft (GPIO2)', ch:1},
+         {name:'LowerRight (GPIO13)', ch:2},
+         {name:'UpperRight (GPIO12)', ch:3},
+         {name:'LeftPitch (GPIO4)', ch:4},
+         {name:'RightPitch (GPIO14)', ch:5},];
     // Reset zeroVals length
     while (this.zeroVals.length < channels.length) this.zeroVals.push(1500);
     this.zeroVals.length = channels.length;
@@ -1433,9 +1537,9 @@ class App {
 
   buildTCodeSliders() {
     const axes = [
-      {id:'L0', label:'L0上下'}, {id:'L1', label:'L1前后'},
-      {id:'L2', label:'L2左右'}, {id:'R0', label:'R0旋转'},
-      {id:'R1', label:'R1滚转'}, {id:'R2', label:'R2俯仰'},
+      {id:'L0', label:'L0 Up/Dn'}, {id:'L1', label:'L1 Fwd/Bk'},
+      {id:'L2', label:'L2 L/R'}, {id:'R0', label:'R0 Twist'},
+      {id:'R1', label:'R1 Roll'}, {id:'R2', label:'R2 Pitch'},
     ];
     const c = document.getElementById('tcodeSliders');
     c.innerHTML = '';
@@ -1476,12 +1580,22 @@ class App {
     });
   }
 
+  applyLang() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (key) el.textContent = t(key);
+    });
+    // Re-render dynamic content
+    this.renderHistory();
+    this.renderScriptHistory();
+  }
+
   async renderScriptHistory() {
     const c = document.getElementById('scriptHistory');
     try {
       const entries = await this.scriptHistory.getAll();
       if (!entries || entries.length === 0) { c.innerHTML = ''; return; }
-      let html = '<div style="color:var(--text2);font-size:9px;margin-bottom:2px">历史脚本：</div>';
+      let html = '<div style="color:var(--text2);font-size:9px;margin-bottom:2px">' + t('scriptHistoryLabel') + '：</div>';
       entries.slice(0, 5).forEach(entry => {
         const date = new Date(entry.date);
         const ds = date.getMonth()+1+'/'+date.getDate()+' '+date.getHours()+':'+String(date.getMinutes()).padStart(2,'0');
@@ -1571,12 +1685,30 @@ class App {
 }
 
 // Init
-try {
-  if (!navigator.serial) document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--error);font-size:18px">需要 Chrome/Edge 浏览器</div>';
-  else new App();
-} catch(e) {
-  document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--error);font-size:18px">初始化失败: ${e.message}</div>`;
+async function initApp() {
+  if (!navigator.serial) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--error);font-size:18px">需要 Chrome/Edge 浏览器</div>';
+    return;
+  }
+  try {
+    new App();
+  } catch(e) {
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;padding:24px;color:var(--error);font-size:16px">
+      <h2>初始化失败</h2>
+      <p style="color:var(--text2);margin-top:8px;font-size:13px">${e.message}</p>
+      <p style="color:var(--text2);margin-top:4px;font-size:11px">刷新页面重试或联系 openosr@gmail.com</p>
+    </div>`;
+    console.error('Init error:', e.stack);
+  }
 }
+// Handle unhandled errors
+window.addEventListener('error', (e) => {
+  const msg = e.error?.message || e.message || '未知错误';
+  document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--error);font-size:16px;padding:24px;text-align:center">
+    <div><h2>页面错误</h2><p style="color:var(--text2);margin-top:8px;font-size:13px">${msg}</p></div>
+  </div>`;
+});
+initApp();
 </script>
 </body>
 </html>
