@@ -267,9 +267,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px">
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
             <span style="font-size:10px;color:var(--text2)" data-i18n="tcodeScript">TCode脚本</span>
-            <label class="pbtn" style="font-size:9px;cursor:pointer" data-i18n="selectScript">选择.funscript
-              <input type="file" id="scriptFile" accept=".funscript" style="display:none">
-            </label>
+            <label class="pbtn" style="font-size:9px;cursor:pointer" data-i18n="selectScript">选择.funscript</label>
+            <input type="file" id="scriptFile" accept=".funscript" style="display:none">
             <button class="pbtn" id="scriptRunBtn" style="font-size:9px;border-color:var(--accent2);color:var(--accent2)" disabled data-i18n="run">运行</button>
             <button class="pbtn" id="scriptStopBtn" style="font-size:9px;border-color:var(--accent);color:var(--accent);display:none" data-i18n="stop">停止</button>
             <select id="scriptDelay" style="background:var(--bg);border:1px solid var(--border2);border-radius:3px;color:var(--text);padding:2px 4px;font-size:9px;outline:none">
@@ -645,6 +644,7 @@ class App {
     // ---- TCode Script Player ----
     this.scriptLines = [];
     this.scriptRunning = false;
+    document.querySelector('.pbtn[data-i18n="selectScript"]')?.addEventListener('click', () => document.getElementById('scriptFile')?.click());
     document.getElementById('scriptFile').addEventListener('change', (e) => {
       const f = e.target.files[0];
       if (!f) return;
