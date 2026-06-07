@@ -1711,4 +1711,23 @@ async function initApp() {
   try {
     new App();
   } catch(e) {
-    document.body.innerHTML = `<div style="display:flex;a
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;padding:24px;color:var(--error);font-size:16px">
+      <h2>初始化失败</h2>
+      <p style="color:var(--text2);margin-top:8px;font-size:13px">${e.message}</p>
+      <p style="color:var(--text2);margin-top:4px;font-size:11px">刷新页面重试或联系 openosr@gmail.com</p>
+    </div>`;
+    console.error('Init error:', e.stack);
+  }
+}
+// Handle unhandled errors
+window.addEventListener('error', (e) => {
+  const msg = e.error?.message || e.message || '未知错误';
+  document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--error);font-size:16px;padding:24px;text-align:center">
+    <div><h2>页面错误</h2><p style="color:var(--text2);margin-top:8px;font-size:13px">${msg}</p></div>
+  </div>`;
+});
+initApp();
+</script>
+</body>
+</html>
+ 
