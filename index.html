@@ -1084,13 +1084,20 @@ class App {
       const hasZLL = findInBin('ZLL:') || findInBin('GPIO15:');
       const hasTEMP = findInBin('TEMP:');
       const hasSPD = findInBin('SPD:');
+      const isNTC = findInBin('CraftyHandy-NTC') || !findInBin('CraftyHandy-NoNTC');
       let features = [];
       if (hasZLL) features.push('校准');
-      if (hasTEMP) features.push('温度');
       if (hasSPD) features.push('速度');
       let fwMsg = '✅ ' + f.name + ' - ';
-      if (features.length >= 3) {
-        fwMsg += '支持完整自定义功能(校准+温度+速度)';
+      if (hasTEMP && isNTC) {
+        features.push('温度');
+        fwMsg += '完整版 (校准+温度+速度)';
+      } else if (!hasTEMP || !isNTC) {
+        fwMsg += '无温控版 (校准+速度, 无温度保护)';
+        document.getElementById('tempReadBtn').disabled = true;
+        document.getElementById('tempSaveBtn').disabled = true;
+        document.getElementById('tempSp').textContent = 'N/A';
+        document.getElementById('tempHy').textContent = 'N/A';
       } else if (features.length > 0) {
         fwMsg += '仅部分支持: ' + features.join(',') + ' (缺少的功能不可用)';
       } else {
@@ -1416,6 +1423,17 @@ class App {
     for (const line of lines) {
       const m = line.match(/TEMP:\s*([\d.]+)\s+HYST:\s*([\d.]+)/i);
       if (m) lastMatch = m;
+      // 检测无温控版本
+      const naMatch = line.match(/TEMP:\s*N\/A/i);
+      if (naMatch) {
+        this.zeroSerial('⚠️ 此固件为无温控版本, 不支持温度功能\n', 'hl');
+        this.tempDataFound = true; // mark as found so no error
+        document.getElementById('tempReadBtn').disabled = true;
+        document.getElementById('tempSaveBtn').disabled = true;
+        document.getElementById('tempSp').textContent = 'N/A';
+        document.getElementById('tempHy').textContent = 'N/A';
+        return;
+      }
     }
     const m = lastMatch;
     if (m) {
@@ -1692,23 +1710,4 @@ async function initApp() {
   }
   try {
     new App();
-  } catch(e) {
-    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;padding:24px;color:var(--error);font-size:16px">
-      <h2>初始化失败</h2>
-      <p style="color:var(--text2);margin-top:8px;font-size:13px">${e.message}</p>
-      <p style="color:var(--text2);margin-top:4px;font-size:11px">刷新页面重试或联系 openosr@gmail.com</p>
-    </div>`;
-    console.error('Init error:', e.stack);
-  }
-}
-// Handle unhandled errors
-window.addEventListener('error', (e) => {
-  const msg = e.error?.message || e.message || '未知错误';
-  document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--error);font-size:16px;padding:24px;text-align:center">
-    <div><h2>页面错误</h2><p style="color:var(--text2);margin-top:8px;font-size:13px">${msg}</p></div>
-  </div>`;
-});
-initApp();
-</script>
-</body>
-</html>
+  } c
