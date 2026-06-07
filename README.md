@@ -13,8 +13,8 @@
 
 | 固件 | 文件名 | 说明 |
 |------|--------|------|
-| **带温控版** | `SR6_CraftyHandy_ESP32-NTC.bin` | 配备 NTC 温控 PCB，超温自动暂停 + LED 报警 |
-| **无温控版** | `SR6_CraftyHandy_ESP32-NoNTC.bin` | 无温控硬件的老用户使用，纯运动控制 |
+| **带温控版** | `SR6_OSR2_CraftyHandy_ESP32-NTC.bin` | 配备 NTC 温控 PCB，超温自动暂停 + LED 报警 |
+| **无温控版** | `SR6_OSR2_CraftyHandy_ESP32-NoNTC.bin` | 无温控硬件的老用户使用，纯运动控制 |
 
 选择对应版本的 `.bin` 文件烧录即可。
 
@@ -83,8 +83,8 @@ Browser-based ESP32 SR6 calibration tool with firmware flashing, servo calibrati
 
 | Firmware | File | Description |
 |----------|------|-------------|
-| **With NTC** | `SR6_CraftyHandy_ESP32-NTC.bin` | For boards with NTC temp sensor, auto-pause on overheat + LED alert |
-| **Without NTC** | `SR6_CraftyHandy_ESP32-NoNTC.bin` | For legacy users without NTC hardware, pure motion control |
+| **With NTC** | `SR6_OSR2_CraftyHandy_ESP32-NTC.bin` | For boards with NTC temp sensor, auto-pause on overheat + LED alert |
+| **Without NTC** | `SR6_OSR2_CraftyHandy_ESP32-NoNTC.bin` | For legacy users without NTC hardware, pure motion control |
 
 Choose the `.bin` that matches your hardware.
 
@@ -144,4 +144,4 @@ Choose the `.bin` that matches your hardware.
 
 ---
 
-*© CraftyHandy - openosr@gmail.com*
+*© CraftyHandy -
