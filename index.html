@@ -2081,4 +2081,205 @@ class App {
         <span class="zn">${ch.name}</span>
         <span class="zv" id="z${i}">1500</span>
         <button class="zb" data-i="${i}" data-d="-10">-10</button>
-        <button class="zb" data-i="${i}" 
+        <button class="zb" data-i="${i}" data-d="10">+10</button>
+      `;
+      c.appendChild(row);
+      row.querySelectorAll('.zb').forEach(b => {
+        b.addEventListener('click', () => {
+          const idx = parseInt(b.dataset.i);
+          const delta = parseInt(b.dataset.d);
+          const v = Math.max(800, Math.min(2200, (this.zeroVals[idx] || 1500) + delta));
+          this.zeroVals[idx] = v;
+          document.getElementById(`z${idx}`).textContent = v;
+          if (this.zWriter) {
+            const vals = [...this.zeroVals];
+            while (vals.length < 6) vals.push(1500);
+            this.zWriter.write(new TextEncoder().encode(`$Z${vals.join(',')}\n`));
+            this.zWriter.write(new TextEncoder().encode(`$M${ch.ch}-${v}\n`));
+          }
+        });
+      });
+    });
+  }
+
+  buildTCodeSliders() {
+    const axes = [
+      {id:'L0', label:'L0 Up/Dn'}, {id:'L1', label:'L1 Fwd/Bk'},
+      {id:'L2', label:'L2 L/R'}, {id:'R0', label:'R0 Twist'},
+      {id:'R1', label:'R1 Roll'}, {id:'R2', label:'R2 Pitch'},
+    ];
+    const c = document.getElementById('tcodeSliders');
+    c.innerHTML = '';
+    axes.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'tc-row';
+      row.innerHTML = '<span class="tl">' + a.id + '</span><span style="font-size:9px;color:var(--text2);width:36px">' + a.label.slice(2) + '</span><input type="range" min="0" max="9999" value="5000" data-ax="' + a.id + '"><span class="tv" id="tv_' + a.id + '">5000</span>';
+      c.appendChild(row);
+      const sl = row.querySelector('input');
+      sl.addEventListener('input', () => {
+        document.getElementById('tv_' + a.id).textContent = sl.value;
+      });
+      let lastVal = 5000;
+      sl.addEventListener('change', () => {
+        if (this.zWriter) {
+          const val = sl.value;
+          const diff = Math.abs(val - lastVal);
+          const interval = Math.min(120, Math.max(30, diff / 20));
+          this.zWriter.write(new TextEncoder().encode(a.id + val + 'I' + interval + '\n'));
+          lastVal = val;
+        }
+      });
+      sl.addEventListener('input', () => {
+        if (this.zWriter && Math.abs(sl.value - lastVal) > 15) {
+          const val = sl.value;
+          const diff = Math.abs(val - lastVal);
+          const interval = Math.min(120, Math.max(30, diff / 20));
+          this.zWriter.write(new TextEncoder().encode(a.id + val + 'I' + interval + '\n'));
+          lastVal = val;
+        }
+      });
+    });
+  }
+
+  updateZeroUI(vals) {
+    document.querySelectorAll('#zeroRows .zv').forEach((el, i) => {
+      if (i < vals.length) el.textContent = vals[i];
+    });
+  }
+
+  applyLang() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (key) el.textContent = t(key);
+    });
+    this.renderHistory();
+    this.renderScriptHistory();
+  }
+
+  async renderScriptHistory() {
+    const c = document.getElementById('scriptHistory');
+    try {
+      const entries = await this.scriptHistory.getAll();
+      if (!entries || entries.length === 0) { c.innerHTML = ''; return; }
+      let html = '<div style="color:var(--text2);font-size:9px;margin-bottom:2px">' + t('scriptHistoryLabel') + '：</div>';
+      entries.slice(0, 5).forEach(entry => {
+        const date = new Date(entry.date);
+        const ds = date.getMonth()+1+'/'+date.getDate()+' '+date.getHours()+':'+String(date.getMinutes()).padStart(2,'0');
+        html += '<div style="display:flex;align-items:center;gap:4px;padding:2px 4px;margin:1px 0;cursor:pointer;border-radius:3px;background:var(--bg);border:1px solid var(--border);font-size:9px"'
+          + ' onmouseover="this.style.borderColor=\'var(--accent2)\'" onmouseout="this.style.borderColor=\'\'"'
+          + ' data-sfid="'+entry.id+'">'
+          + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">'+entry.name+'</span>'
+          + '<span style="color:var(--text2)">'+entry.lines+'帧</span>'
+          + '<span style="color:var(--text2)">'+ds+'</span></div>';
+      });
+      c.innerHTML = html;
+      c.querySelectorAll('[data-sfid]').forEach(el => {
+        el.addEventListener('click', async () => {
+          const id = parseInt(el.dataset.sfid);
+          const entry = await this.scriptHistory.load(id);
+          if (entry && entry.data) {
+            const text = entry.data;
+            const data = JSON.parse(text);
+            const actions = (data.actions || []).sort((a,b) => a.at - b.at);
+            if (actions.length > 0) {
+              const rawPos = actions.map(a => a.pos);
+              const smoothed = [];
+              const windowSize = 5;
+              for (let i = 0; i < rawPos.length; i++) {
+                let sum = 0, count = 0;
+                for (let j = -Math.floor(windowSize/2); j <= Math.floor(windowSize/2); j++) {
+                  const idx = i + j;
+                  if (idx >= 0 && idx < rawPos.length) { sum += rawPos[idx]; count++; }
+                }
+                smoothed.push(sum / count);
+              }
+              this.scriptLines = [];
+              this.scriptFSTiming = [];
+              for (let i = 0; i < actions.length; i++) {
+                const pos = Math.round(smoothed[i] / 100 * 9999);
+                const clampedPos = Math.max(0, Math.min(9999, pos));
+                const nextAt = (i < actions.length - 1) ? actions[i+1].at : (actions[i].at + 100);
+                const interval = Math.max(40, Math.min(nextAt - actions[i].at, 250));
+                this.scriptLines.push('L0' + clampedPos + 'I' + interval);
+                this.scriptFSTiming.push(nextAt - actions[i].at);
+              }
+              document.getElementById('scriptDelay').value = 0;
+              document.getElementById('scriptRunBtn').disabled = false;
+              document.getElementById('scriptStatus').textContent = '已加载: ' + entry.name + ' (' + actions.length + ' 帧)';
+              this.zeroSerial('✅ 历史脚本: ' + entry.name + '\n', 'hl');
+            }
+          }
+        });
+      });
+    } catch(e) {}
+  }
+
+  async scriptPlay() {
+    if (!this.zWriter) { this.zeroSerial('请先连接串口\n','ts'); return; }
+    if (this.scriptLines.length === 0) { this.zeroSerial('请先选择脚本文件\n','ts'); return; }
+    this.scriptRunning = true;
+    const fixedDelay = parseInt(document.getElementById('scriptDelay').value);
+    const useFsTiming = this.scriptFSTiming && fixedDelay === 0;
+    const runBtn = document.getElementById('scriptRunBtn');
+    const stopBtn = document.getElementById('scriptStopBtn');
+    runBtn.style.display = 'none';
+    stopBtn.style.display = '';
+    document.getElementById('scriptStatus').textContent = '运行中... 0/' + this.scriptLines.length;
+
+    for (let i = 0; i < this.scriptLines.length && this.scriptRunning; i++) {
+      const cmd = this.scriptLines[i];
+      if (!cmd || cmd.startsWith('#')) continue;
+      this.zWriter.write(new TextEncoder().encode(cmd + '\n'));
+      this.zeroSerial(cmd + '\n', 'tx');
+      document.getElementById('scriptStatus').textContent = '运行中 ' + (i+1) + '/' + this.scriptLines.length + ' - ' + cmd;
+      const delay = useFsTiming ? this.scriptFSTiming[i] : fixedDelay;
+      const start = Date.now();
+      while (Date.now() - start < delay && this.scriptRunning) {
+        await new Promise(r => setTimeout(r, 5));
+      }
+    }
+
+    this.scriptRunning = false;
+    runBtn.style.display = '';
+    stopBtn.style.display = 'none';
+    document.getElementById('scriptStatus').textContent = this.scriptRunning ? '已停止' : '运行完成 (' + this.scriptLines.length + ' 条)';
+    if (!this.scriptRunning) this.zeroSerial('脚本已停止\n', 'ts');
+    else this.zeroSerial('脚本运行完成\n', 'hl');
+  }
+}
+
+// Init
+async function initApp() {
+  if (!navigator.serial) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:var(--error);font-size:18px">需要 Chrome/Edge 浏览器</div>';
+    return;
+  }
+  try {
+    new App();
+  } catch(e) {
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;padding:24px;color:var(--error);font-size:16px">
+      <h2>初始化失败</h2>
+      <p style="color:var(--text2);margin-top:8px;font-size:13px">${e.message}</p>
+      <p style="color:var(--text2);margin-top:4px;font-size:11px">刷新页面重试或联系 openosr@gmail.com</p>
+    </div>`;
+    console.error('Init error:', e.stack);
+  }
+}
+window.addEventListener('error', (e) => {
+  const msg = e.error?.message || e.message || '未知错误';
+  // 捕获并显示初始化错误，方便调试
+  const body = document.getElementById('pageWifi');
+  if (body && !document.querySelector('.err-display')) {
+    const div = document.createElement('div');
+    div.className = 'err-display';
+    div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#e94560;color:#fff;padding:12px;font-size:13px;z-index:9999;font-family:sans-serif';
+    div.textContent = '⚠ ' + msg;
+    document.body.prepend(div);
+    setTimeout(() => div.remove(), 8000);
+  }
+  console.error('Page error:', msg, e);
+});
+initApp();
+</script>
+</body>
+</html>
