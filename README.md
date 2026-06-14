@@ -7,13 +7,14 @@
 ## 🇨🇳 中文
 
 ### 简介
-基于浏览器的 ESP32 SR6 调平工具，支持固件烧录、舵机校准、温度保护、速度微调、WiFi 控制等功能。
+基于浏览器的 ESP32 SR6 调平工具，支持固件烧录、舵机校准、温度保护、速度微调、WiFi 控制、WiFi 配网、WebSocket 脚本播放等功能。
 
 ### 固件版本
 
 | 固件 | 文件名 | 说明 |
 |------|--------|------|
-| **带温控版** | `SR6_OSR2_CraftyHandy_ESP32-NTC.bin` | 配备 NTC 温控 PCB，超温自动暂停 + LED 报警 |
+| **带温控版 (10K)** | `SR6_OSR2_CraftyHandy_ESP32-NTC-10K.bin` | 配备 NTC 温控 PCB (10K 3435)，超温自动暂停 + LED 报警 |
+| **带温控版 (5K)** | `SR6_OSR2_CraftyHandy_ESP32-NTC-5K.bin` | 配备 NTC 温控 PCB (5K 3470)，超温自动暂停 + LED 报警 |
 | **无温控版** | `SR6_OSR2_CraftyHandy_ESP32-NoNTC.bin` | 无温控硬件的老用户使用，纯运动控制 |
 
 选择对应版本的 `.bin` 文件烧录即可。
@@ -55,10 +56,11 @@
 > 无温控版发送 D4 会返回 `TEMP: N/A (无温控版本)`。
 
 ### 使用方式
-1. 用 **Chrome/Edge** 浏览器打开 `esp32-tool.html`
+1. 用 **Chrome/Edge** 浏览器打开 `index.html`
 2. 将 ESP32 通过 USB 连接到电脑
 3. 点击「烧录」标签 → 连接设备 → 写入固件
 4. 点击「校准」标签 → 连接串口 → 开始校准
+5. 点击「WiFi」标签 → 连接串口 → 配网/WebSocket连接
 
 ### 功能说明
 
@@ -70,20 +72,22 @@
 | **速度微调** | 6路舵机独立速度调节（0.1~5.0倍）|
 | **测试动作** | 滑条控制 + .funscript 脚本播放 |
 | **蓝牙名称** | 修改蓝牙名称 |
-| **WiFi** | 配网后可通过浏览器发送 TCode 命令 |
+| **WiFi配网** | 通过串口配置WiFi SSID/密码并保存到EEPROM |
+| **WebSocket连接** | 通过WiFi无线发送TCode命令，支持脚本播放 |
 
 ---
 
 ## 🇬🇧 English
 
 ### Introduction
-Browser-based ESP32 SR6 calibration tool with firmware flashing, servo calibration, temperature protection, speed tuning, and WiFi control.
+Browser-based ESP32 SR6 calibration tool with firmware flashing, servo calibration, temperature protection, speed tuning, WiFi control, and WebSocket script playback.
 
 ### Firmware Versions
 
 | Firmware | File | Description |
 |----------|------|-------------|
-| **With NTC** | `SR6_OSR2_CraftyHandy_ESP32-NTC.bin` | For boards with NTC temp sensor, auto-pause on overheat + LED alert |
+| **With NTC (10K)** | `SR6_OSR2_CraftyHandy_ESP32-NTC-10K.bin` | For boards with NTC temp sensor (10K 3435), auto-pause on overheat + LED alert |
+| **With NTC (5K)** | `SR6_OSR2_CraftyHandy_ESP32-NTC-5K.bin` | For boards with NTC temp sensor (5K 3470), auto-pause on overheat + LED alert |
 | **Without NTC** | `SR6_OSR2_CraftyHandy_ESP32-NoNTC.bin` | For legacy users without NTC hardware, pure motion control |
 
 Choose the `.bin` that matches your hardware.
@@ -125,23 +129,8 @@ Choose the `.bin` that matches your hardware.
 > Non-NTC version returns `TEMP: N/A (No temp version)` on D4.
 
 ### How to Use
-1. Open `esp32-tool.html` with **Chrome/Edge**
+1. Open `index.html` with **Chrome/Edge**
 2. Connect ESP32 via USB
 3. Click "Flash" tab → Connect → Write firmware
 4. Click "Calibration" tab → Connect serial → Start calibrating
-
-### Features
-
-| Feature | Description |
-|---------|-------------|
-| **Flash Firmware** | Connect → Select .bin → Write/Erase/Reboot |
-| **Servo Calibration** | SR6(6-axis) / OSR2(3-axis) modes, ±10 fine tune |
-| **Temp Protection** | Set temperature threshold, auto-pause on overheat **(NTC only)** |
-| **Speed Tuning** | Independent speed for 6 servos (0.1~5.0x) |
-| **Test Action** | Slider control + .funscript player |
-| **Bluetooth Name** | Change Bluetooth device name |
-| **WiFi** | Send TCode commands via browser after WiFi setup |
-
----
-
-*© CraftyHandy - openosr@gmail.com*
+5. Click "WiFi" tab → Connect serial → Config
