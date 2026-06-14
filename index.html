@@ -868,14 +868,22 @@ class App {
 
   init() {
     // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(b => {
-      b.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
-        document.querySelectorAll('.tab-page').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        document.getElementById('page' + b.dataset.tab.charAt(0).toUpperCase() + b.dataset.tab.slice(1)).classList.add('active');
+    try {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+          document.querySelectorAll('.tab-page').forEach(x => x.classList.remove('active'));
+          b.classList.add('active');
+          const pageId = 'page' + b.dataset.tab.charAt(0).toUpperCase() + b.dataset.tab.slice(1);
+          const page = document.getElementById(pageId);
+          if (page) page.classList.add('active');
+        });
       });
-    });
+    } catch(e) {
+      console.error('Tab init error:', e);
+      const bar = document.querySelector('.tab-bar');
+      if (bar) bar.innerHTML = '<span style="color:var(--error);padding:10px;font-size:12px">Tab error: ' + e.message + '</span>';
+    }
 
     // ---- Flash ----
     document.getElementById('flashConnectBtn').addEventListener('click', () => this.flashConnect());
@@ -2073,12 +2081,4 @@ class App {
         <span class="zn">${ch.name}</span>
         <span class="zv" id="z${i}">1500</span>
         <button class="zb" data-i="${i}" data-d="-10">-10</button>
-        <button class="zb" data-i="${i}" data-d="10">+10</button>
-      `;
-      c.appendChild(row);
-      row.querySelectorAll('.zb').forEach(b => {
-        b.addEventListener('click', () => {
-          const idx = parseInt(b.dataset.i);
-          const delta = parseInt(b.dataset.d);
-          const v = Math.max(800, Math.min(2200, (this.zeroVals[idx] || 1500) + delta));
-          this.
+        <button class="zb" data-i="${i}" 
