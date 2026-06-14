@@ -536,17 +536,22 @@ const LANG = {
 let currentLang = localStorage.getItem('esp32_lang') || 'zh';
 function t(key) { return LANG[currentLang]?.[key] || LANG.zh[key] || key; }
 
-// Load esptool-js for flash mode
+// Load esptool-js for flash mode (懒加载，不阻塞UI初始化)
 let EL, TR;
-try {
-  const m = await import("https://unpkg.com/esptool-js@0.6.0/bundle.js");
-  EL = m.ESPLoader; TR = m.Transport;
-} catch {
+let esptoolLoadAttempted = false;
+async function ensureEsptool() {
+  if (EL || esptoolLoadAttempted) return;
+  esptoolLoadAttempted = true;
   try {
-    const m = await import("https://cdn.jsdelivr.net/npm/esptool-js@0.6.0/bundle.js");
+    const m = await import("https://unpkg.com/esptool-js@0.6.0/bundle.js");
     EL = m.ESPLoader; TR = m.Transport;
   } catch {
-    console.warn('esptool-js not loaded, flash disabled');
+    try {
+      const m = await import("https://cdn.jsdelivr.net/npm/esptool-js@0.6.0/bundle.js");
+      EL = m.ESPLoader; TR = m.Transport;
+    } catch {
+      console.warn('esptool-js not loaded, flash disabled');
+    }
   }
 }
 
@@ -2076,8 +2081,4 @@ class App {
           const idx = parseInt(b.dataset.i);
           const delta = parseInt(b.dataset.d);
           const v = Math.max(800, Math.min(2200, (this.zeroVals[idx] || 1500) + delta));
-          this.zeroVals[idx] = v;
-          document.getElementById(`z${idx}`).textContent = v;
-          if (this.zWriter) {
-            const vals = [...this.zeroVals];
-            while (vals.length < 6) vals.pu
+          this.
