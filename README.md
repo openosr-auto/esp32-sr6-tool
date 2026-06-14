@@ -144,4 +144,4 @@ Choose the `.bin` that matches your hardware.
 
 ---
 
-*© CraftyHandy -
+*© CraftyHandy - openosr@gmail.com*
