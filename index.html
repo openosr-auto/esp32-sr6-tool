@@ -327,7 +327,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h3>WiFi配网</h3><button class="pbtn" id="wifiSaveBtn2" style="font-size:9px;border-color:var(--accent3);color:var(--accent3)">保存</button></div>
         <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap"><input type="text" id="wifiSsidInput2" maxlength="46" style="flex:1;min-width:100px;padding:4px 6px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:10px;font-family:var(--font);outline:none" placeholder="WiFi名称"><input type="password" id="wifiPassInput2" maxlength="46" style="flex:1;min-width:80px;padding:4px 6px;background:var(--bg);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-size:10px;font-family:var(--font);outline:none" placeholder="密码"></div>
         <div id="wifiStatus2" style="font-size:9px;color:var(--text2);margin-top:4px"></div>
-        <div id="wifiSaveHint" style="font-size:9px;color:var(--warning);margin-top:6px;line-height:1.5;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;display:none">💡 WiFi信息已保存到EEPROM。<br>请到<b>烧录</b>标签页连接端口后点<b>重启ESP32</b>，或直接断电重启使配置生效。</div>
+        <div style="font-size:8px;color:var(--text2);margin-top:4px;line-height:1.4">配网保存后重启ESP32生效</div>
       </div>
       <div class="section" style="border-left:3px solid var(--accent2);box-shadow:0 2px 12px rgba(0,0,0,.3)"><h3>WebSocket连接</h3>
         <div class="flash-panel">
@@ -1686,7 +1686,7 @@ class App {
     $('wifiSerialBtn').addEventListener('click',()=>this.wifiSerialToggle());
     $('wifiConnectBtn').addEventListener('click',()=>this.wifiConnect());
     $('wifiDisconnectBtn').addEventListener('click',()=>this.wifiDisconnect());
-                $('wifiSaveBtn2').addEventListener('click',async()=>{if(!this.wifiSerialWriter){this.wifiLog('请先连接串口\n','err');return;}const s=$('wifiSsidInput2').value.trim(),p=$('wifiPassInput2').value.trim();if(!s){this.wifiLog('请输入WiFi名称\n','err');return;}await this.wifiSerialWriter.write(new TextEncoder().encode('$W'+s+','+p+'\n'));this.wifiLog('WiFi已保存: '+s+'\n','ok');$('wifiStatus2').textContent='已保存: '+s;window.$('wifiSaveHint').style.display='block';this.wifiLog('✅ 数据已写入EEPROM，断电或到烧录页重启ESP32生效\n','ok');});
+            $('wifiSaveBtn2').addEventListener('click',async()=>{if(!this.wifiSerialWriter){this.wifiLog('请先连接串口\n','err');return;}const s=$('wifiSsidInput2').value.trim(),p=$('wifiPassInput2').value.trim();if(!s){this.wifiLog('请输入WiFi名称\n','err');return;}try{await this.wifiSerialWriter.write(new TextEncoder().encode('$W'+s+','+p+'\n'));this.wifiLog('WiFi已保存: '+s+'\n','ok');$('wifiStatus2').textContent='已保存: '+s+' 正在重启...';this.wifiLog('正在重启ESP32...\n','info');try{this._wifiReading=false;if(this._wifiReader){try{await this._wifiReader.cancel();}catch(e2){this._wifiReader=null;}}try{await this.wifiSerialPort.setSignals({rts:true});await new Promise(r=>setTimeout(r,200));await this.wifiSerialPort.setSignals({rts:false});this.wifiLog('✅ ESP32已重启，等待WiFi连接...\n','ok');}catch(e){this.wifiLog('重启失败: '+e.message+'\n','err');this.wifiLog('请断电重启ESP32\n','warn');}}catch(e){this.wifiLog('保存失败: '+e.message+'\n','err');}});
     $('wifiSelectScriptLabel').addEventListener('click',()=>$('wifiScriptFile')?.click());
     $('wifiScriptFile').addEventListener('change',e=>this.wifiHandleScript(e));
     $('wifiScriptRunBtn').addEventListener('click',()=>this.wifiScriptPlay());
@@ -1696,14 +1696,16 @@ class App {
     $('wifiTcodeSliders').innerHTML=ax.map((a,k)=>'<div class="tc-row"><span class="tl">'+a.i+'</span><input type="range" min="0" max="9999" value="5000" data-wi="'+k+'" data-wax="'+a.i+'"><span class="tv" id="wtv'+k+'">5000</span></div>').join('');
     $('wifiTcodeSliders').querySelectorAll('input[type="range"]').forEach(sl=>{sl.addEventListener('input',()=>{this.wifiSend(sl.dataset.wax+sl.value.padStart(4,'0'));const d=$('wtv'+sl.dataset.wi);if(d)d.textContent=sl.value;});});
   }
-  async wifiSerialToggle(){const btn=window.$('wifiSerialBtn');if(this.wifiSerialPort){try{await this.wifiSerialPort.close()}catch(e){}this.wifiSerialPort=null;this.wifiSerialWriter=null;btn.textContent='连接设备';window.$('wifiSerialStatus').textContent='未连接';this.wifiLog('串口已断开\n','info');return;}try{var p=await navigator.serial.requestPort();await p.open({baudRate:115200});this.wifiSerialPort=p;this.wifiSerialWriter=p.writable.getWriter();btn.textContent='断开';window.$('wifiSerialStatus').textContent='✅ 已连接';this.wifiLog('✅ 串口已连接\n','ok');this._readWifiSerial(p);setTimeout(async function(){if(this.wifiSerialWriter){await this.wifiSerialWriter.write(new TextEncoder().encode('D7\n'));this.wifiLog('D7 (读取WiFi信息)\n','tx');}}.bind(this),400);}catch(e){if(e.name!=='NotFoundError')this.wifiLog('串口连接失败: '+e.message+'\n','err');}}
+  async wifiSerialToggle(){const btn=window.$('wifiSerialBtn');if(this.wifiSerialPort){this._wifiReading=false;try{if(this._wifiReader){await this._wifiReader.cancel();this._wifiReader=null;}}catch(e){}try{if(this.wifiSerialWriter){await this.wifiSerialWriter.close();this.wifiSerialWriter=null;}}catch(e){}try{await this.wifiSerialPort.close()}catch(e){}this.wifiSerialPort=null;btn.textContent='连接设备';$('wifiSerialStatus').textContent='未连接';this.wifiLog('串口已断开\n','info');return;}try{const b=115200,p=await navigator.serial.requestPort();await p.open({baudRate:b});this.wifiSerialPort=p;this.wifiSerialWriter=p.writable.getWriter();btn.textContent='断开';$('wifiSerialStatus').textContent='✅ 已连接 @ '+b;this.wifiLog('✅ 串口已连接 @ '+b+'\n','ok');this._readWifiSerial(p);setTimeout(async()=>{if(this.wifiSerialWriter){await this.wifiSerialWriter.write(new TextEncoder().encode('D7\n'));this.wifiLog('D7 (读取WiFi信息)\n','tx');}},400);}catch(e){if(e.name!=='NotFoundError')this.wifiLog('串口连接失败: '+e.message+'\n','err');}}
   async _readWifiSerial(port) {
     var $$ = window.$;
     var buf = '';
     var found = false;
+    this._wifiReading=true;
     try {
-      while (port.readable) {
-        var reader = port.readable.getReader();
+      while (port.readable && this._wifiReading) {
+        this._wifiReader = port.readable.getReader();
+        var reader = this._wifiReader;
         try {
           while (true) {
             var result = await reader.read();
@@ -1747,15 +1749,15 @@ class App {
         }
       }
       if (!found) {
-        this.wifiLog('未读取到WiFi信息，请确认已配网并重启\n', 'warn');
+        this.wifiLog('未读取到WiFi信息\n', 'warn');
       }
     } catch(e) {
       if (e.name !== 'AbortError' && e.name !== 'NetworkError') {
         this.wifiLog('串口读取已断开\n', 'info');
       }
     }
-  }  wifiConnect(){const ip=window.$('wifiDeviceIP').value.trim();if(!ip){this.wifiLog('请输入设备IP\n','err');return;}if(this.wsSocket)this.wsSocket.close();const url='ws://'+ip+':81';this.wifiLog('连接 '+url+'...\n','info');try{this.wsSocket=new WebSocket(url);this.wsSocket.onopen=()=>{this.wsConnected=true;window.$('wifiStatusText').textContent='已连接 '+ip;window.$('wifiConnectBtn').classList.add('hidden');window.$('wifiDisconnectBtn').classList.remove('hidden');this.wifiLog('✅ WebSocket已连接\n','ok');};this.wsSocket.onclose=()=>{this.wsConnected=false;window.$('wifiStatusText').textContent='未连接';window.$('wifiConnectBtn').classList.remove('hidden');window.$('wifiDisconnectBtn').classList.add('hidden');this.wifiLog('已断开\n','info');};this.wsSocket.onerror=()=>{this.wifiLog('连接失败\n','err');this.wifiLog('💡 检查IP/ESP32是否开机\n','warn');this.wsSocket=null;};}catch(e){this.wifiLog('连接失败: '+e.message+'\n','err');}}
-  wifiDisconnect(){var $_=window.$;if(this.wsSocket){this.wsSocket.close();this.wsSocket=null;}this.wsConnected=false;$('wifiStatusText').textContent='未连接';$('wifiConnectBtn').classList.remove('hidden');$('wifiDisconnectBtn').classList.add('hidden');this.wifiLog('已断开\n','ts');}
+  }  wifiConnect(){const ip=this.$('wifiDeviceIP').value.trim();if(!ip){this.wifiLog('请输入设备IP\n','err');return;}if(this.wsSocket)this.wsSocket.close();const url='ws://'+ip+':81';this.wifiLog('连接 '+url+'...\n','info');try{this.wsSocket=new WebSocket(url);this.wsSocket.onopen=()=>{this.wsConnected=true;$('wifiStatusText').textContent='已连接 '+ip;$('wifiConnectBtn').classList.add('hidden');$('wifiDisconnectBtn').classList.remove('hidden');this.wifiLog('✅ WebSocket已连接\n','ok');};this.wsSocket.onclose=()=>{this.wsConnected=false;$('wifiStatusText').textContent='未连接';$('wifiConnectBtn').classList.remove('hidden');$('wifiDisconnectBtn').classList.add('hidden');this.wifiLog('已断开\n','info');};this.wsSocket.onerror=()=>{this.wifiLog('连接失败\n','err');this.wifiLog('💡 检查IP/ESP32是否开机\n','warn');this.wsSocket=null;};}catch(e){this.wifiLog('连接失败: '+e.message+'\n','err');}}
+  wifiDisconnect(){var $_=this.$;if(this.wsSocket){this.wsSocket.close();this.wsSocket=null;}this.wsConnected=false;$('wifiStatusText').textContent='未连接';$('wifiConnectBtn').classList.remove('hidden');$('wifiDisconnectBtn').classList.add('hidden');this.wifiLog('已断开\n','ts');}
   wifiSend(c){if(this.wsSocket&&this.wsConnected){this.wsSocket.send(c);this.wifiLog(c+'\n','tx');return 1;}if(this.wifiSerialWriter&&this.wifiSerialPort){this.wifiSerialWriter.write(new TextEncoder().encode(c+'\n'));this.wifiLog(c+'\n','tx');return 1;}this.wifiLog('⚠️ 请先连接\n','err');return 0;}
   wifiLog(m,c){const e=$('wifiOutput'),t=new Date().toLocaleTimeString();e.innerHTML+='<span class="ts">['+t+']</span> <span class="'+(c||'')+'">'+esc(m)+'</span>';if($('wifiAutoScroll').checked)e.scrollTop=e.scrollHeight;}
   wifiHandleScript(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(ev)=>{try{const d=JSON.parse(ev.target.result);if(d.actions&&Array.isArray(d.actions)){const a=d.actions.sort((x,y)=>x.at-y.at);this.wsScriptLines=[];this.wsScriptFSTiming=[];for(let i=0;i<a.length;i++){const p=Math.round(a[i].pos*9999);this.wsScriptLines.push('L0'+String(Math.max(0,Math.min(9999,p))).padStart(4,'0'));const n=i<a.length-1?a[i+1].at:a[i].at+100;this.wsScriptFSTiming.push(n-a[i].at);}$('wifiScriptDelay').value=0;$('wifiScriptRunBtn').disabled=false;this.wifiLog('✅ funscript 已加载: '+a.length+' 帧\n','ok');}}catch(e){this.wifiLog('解析失败\n','err');}};r.readAsText(f);}
