@@ -536,12 +536,10 @@ const LANG = {
 let currentLang = localStorage.getItem('esp32_lang') || 'zh';
 function t(key) { return LANG[currentLang]?.[key] || LANG.zh[key] || key; }
 
-// Load esptool-js for flash mode (懒加载，不阻塞UI初始化)
+// Load esptool-js for flash mode
 let EL, TR;
-let esptoolLoadAttempted = false;
 async function ensureEsptool() {
-  if (EL || esptoolLoadAttempted) return;
-  esptoolLoadAttempted = true;
+  if (EL) return;
   try {
     const m = await import("https://unpkg.com/esptool-js@0.6.0/bundle.js");
     EL = m.ESPLoader; TR = m.Transport;
@@ -1429,6 +1427,7 @@ class App {
   }
 
   async flashConnect() {
+    await ensureEsptool();
     if (!EL) return this.flashLog('esptool-js 未加载，刷新页面重试','err');
     try {
       if (!navigator.serial) throw new Error('WebSerial 不支持');
