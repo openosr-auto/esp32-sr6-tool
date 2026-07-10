@@ -977,7 +977,7 @@ class App {
         const row = document.getElementById('spdRow' + i);
         if (row) row.style.display = (isOSR2 && (i === 1 || i === 3 || i === 5)) ? 'none' : '';
       }
-      this.buildZeroUI(); this.zeroReset();
+      this.buildZeroUI();
     });
 
     // ---- Temperature ----
@@ -2058,47 +2058,80 @@ class App {
 
   buildZeroUI() {
     const mode = document.getElementById('modeSelect').value;
-    const channels = mode === 'osr2'
-      ? [{name:'OSR2 Left (GPIO15)', ch:0, gpio:15},
-         {name:'OSR2 Right (GPIO13)', ch:2, gpio:13},
-         {name:'OSR2 Pitch (GPIO4)', ch:4, gpio:4},]
-      : [{name:'LowerLeft (GPIO15)', ch:0},
-         {name:'UpperLeft (GPIO2)', ch:1},
-         {name:'LowerRight (GPIO13)', ch:2},
-         {name:'UpperRight (GPIO12)', ch:3},
-         {name:'LeftPitch (GPIO4)', ch:4},
-         {name:'RightPitch (GPIO14)', ch:5},];
-    while (this.zeroVals.length < channels.length) this.zeroVals.push(1500);
-    this.zeroVals.length = channels.length;
+    // zeroVals 始终保持6通道数据：[GPIO15, GPIO2, GPIO13, GPIO12, GPIO4, GPIO14]
+    while (this.zeroVals.length < 6) this.zeroVals.push(1500);
+    this.zeroVals.length = 6;
 
-    const c = document.getElementById('zeroRows');
-    c.innerHTML = '';
-    channels.forEach((ch, i) => {
-      const row = document.createElement('div');
-      row.className = 'z-row';
-      row.innerHTML = `
-        <span class="zn">${ch.name}</span>
-        <span class="zv" id="z${i}">1500</span>
-        <button class="zb" data-i="${i}" data-d="-10">-10</button>
-        <button class="zb" data-i="${i}" data-d="10">+10</button>
-      `;
-      c.appendChild(row);
-      row.querySelectorAll('.zb').forEach(b => {
+    if (mode === 'osr2') {
+      // 只显示3个通道，映射到6通道数组的正确位置
+      const chMap = [
+        {name:'OSR2 Left (GPIO15)', idx:0, ch:0, gpio:15},
+        {name:'OSR2 Right (GPIO13)', idx:2, ch:2, gpio:13},
+        {name:'OSR2 Pitch (GPIO4)', idx:4, ch:4, gpio:4},
+      ];
+      const c = document.getElementById('zeroRows');
+      c.innerHTML = '';
+      chMap.forEach((ch, i) => {
+        const row = document.createElement('div');
+        row.className = 'z-row';
+        row.innerHTML = `
+          <span class="zn">${ch.name}</span>
+          <span class="zv" id="z${ch.idx}">${this.zeroVals[ch.idx]}</span>
+          <button class="zb" data-vidx="${ch.idx}" data-ch="${ch.ch}" data-d="-10">-10</button>
+          <button class="zb" data-vidx="${ch.idx}" data-ch="${ch.ch}" data-d="10">+10</button>
+        `;
+        c.appendChild(row);
+      });
+      c.querySelectorAll('.zb').forEach(b => {
         b.addEventListener('click', () => {
-          const idx = parseInt(b.dataset.i);
+          const vidx = parseInt(b.dataset.vidx);
           const delta = parseInt(b.dataset.d);
-          const v = Math.max(800, Math.min(2200, (this.zeroVals[idx] || 1500) + delta));
-          this.zeroVals[idx] = v;
-          document.getElementById(`z${idx}`).textContent = v;
+          const v = Math.max(800, Math.min(2200, (this.zeroVals[vidx] || 1500) + delta));
+          this.zeroVals[vidx] = v;
+          document.getElementById(`z${vidx}`).textContent = v;
           if (this.zWriter) {
-            const vals = [...this.zeroVals];
-            while (vals.length < 6) vals.push(1500);
-            this.zWriter.write(new TextEncoder().encode(`$Z${vals.join(',')}\n`));
-            this.zWriter.write(new TextEncoder().encode(`$M${ch.ch}-${v}\n`));
+            this.zWriter.write(new TextEncoder().encode(`$Z${this.zeroVals.join(',')}\n`));
+            this.zWriter.write(new TextEncoder().encode(`$M${b.dataset.ch}-${v}\n`));
           }
         });
       });
-    });
+    } else {
+      // SR6显示全部6通道
+      const channels = [
+        {name:'LowerLeft (GPIO15)', ch:0},
+        {name:'UpperLeft (GPIO2)', ch:1},
+        {name:'LowerRight (GPIO13)', ch:2},
+        {name:'UpperRight (GPIO12)', ch:3},
+        {name:'LeftPitch (GPIO4)', ch:4},
+        {name:'RightPitch (GPIO14)', ch:5},
+      ];
+      const c = document.getElementById('zeroRows');
+      c.innerHTML = '';
+      channels.forEach((ch, i) => {
+        const row = document.createElement('div');
+        row.className = 'z-row';
+        row.innerHTML = `
+          <span class="zn">${ch.name}</span>
+          <span class="zv" id="z${i}">${this.zeroVals[i]}</span>
+          <button class="zb" data-i="${i}" data-d="-10">-10</button>
+          <button class="zb" data-i="${i}" data-d="10">+10</button>
+        `;
+        c.appendChild(row);
+        row.querySelectorAll('.zb').forEach(b => {
+          b.addEventListener('click', () => {
+            const idx = parseInt(b.dataset.i);
+            const delta = parseInt(b.dataset.d);
+            const v = Math.max(800, Math.min(2200, (this.zeroVals[idx] || 1500) + delta));
+            this.zeroVals[idx] = v;
+            document.getElementById(`z${idx}`).textContent = v;
+            if (this.zWriter) {
+              this.zWriter.write(new TextEncoder().encode(`$Z${this.zeroVals.join(',')}\n`));
+              this.zWriter.write(new TextEncoder().encode(`$M${ch.ch}-${v}\n`));
+            }
+          });
+        });
+      });
+    }
   }
 
   buildTCodeSliders() {
@@ -2141,8 +2174,12 @@ class App {
   }
 
   updateZeroUI(vals) {
-    document.querySelectorAll('#zeroRows .zv').forEach((el, i) => {
-      if (i < vals.length) el.textContent = vals[i];
+    document.querySelectorAll('#zeroRows .zv').forEach(el => {
+      const id = el.id; // z0, z2, z4, etc.
+      if (id && id.startsWith('z')) {
+        const idx = parseInt(id.substring(1));
+        if (idx >= 0 && idx < vals.length) el.textContent = vals[idx];
+      }
     });
   }
 
