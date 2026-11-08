@@ -59,8 +59,8 @@
 | LeftPitch | 4 |
 | RightPitch | 14 |
 | Twist | 27 |
-| Valve | 26 |
-| TwistFeedback | 25 |
+| Valve | 25 |
+| TwistFeedback | 26 |
 | Vibe0 | 18 |
 | Vibe1 | 19 |
 | Lube (选配) | 23 |
@@ -167,8 +167,8 @@ Compile `.ino` with Arduino IDE or flash `.bin` from `build/` via the web tool.
 | LeftPitch | 4 |
 | RightPitch | 14 |
 | Twist | 27 |
-| Valve | 26 |
-| TwistFeedback | 25 |
+| Valve | 25 |
+| TwistFeedback | 26 |
 | Vibe0 | 18 |
 | Vibe1 | 19 |
 | Lube (optional) | 23 |
